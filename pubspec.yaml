@@ -1,0 +1,58 @@
+name: money_management
+description: "Cashier — Offline Expense Management App"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Icons
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
+  shimmer: ^3.0.0
+  animations: ^2.0.11
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Local Database
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Charts
+  fl_chart: ^0.69.0
+
+  # PDF & Excel Export
+  pdf: ^3.11.1
+  printing: ^5.13.2
+  excel: ^4.0.6
+
+  # File & Share
+  share_plus: ^10.0.2
+  file_picker: ^8.1.2
+  path_provider: ^2.1.4
+
+  # Notifications
+  flutter_local_notifications: ^17.2.4
+
+  # Utilities
+  intl: ^0.19.0
+  shared_preferences: ^2.3.2
+  uuid: ^4.5.1
+  permission_handler: ^11.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/animations/

@@ -46,51 +46,60 @@ class AppBottomNav extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
         color: Colors.transparent,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final double totalWidth = constraints.maxWidth;
-            // Calculate U: total flex units = 10 * 4 + 18 = 58
-            final double u = totalWidth / 58.0;
-            final double indicatorWidth = 18.0 * u;
-            final double indicatorLeft = currentIndex * 10.0 * u;
-
-            return Container(
-              height: 64,
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
-                borderRadius: BorderRadius.circular(32),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-                border: Border.all(
-                  color: isDark
-                      ? const Color(0xFF2C2C3E)
-                      : Colors.grey.withValues(alpha: 0.15),
-                  width: 1,
-                ),
+        child: Container(
+          height: 64,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
-              child: Stack(
+            ],
+            border: Border.all(
+              color: isDark
+                  ? const Color(0xFF2C2C3E)
+                  : Colors.grey.withValues(alpha: 0.15),
+              width: 1,
+            ),
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final totalWidth = constraints.maxWidth;
+
+              // Selected tab is flex 1.8, unselected is flex 1.0
+              const selectedFlex = 1.8;
+              const unselectedFlex = 1.0;
+              const totalFlex =
+                  (5 - 1) * unselectedFlex + selectedFlex; // 5 tabs total
+
+              final unitWidth = totalWidth / totalFlex;
+              final selectedWidth = unitWidth * selectedFlex;
+              final unselectedWidth = unitWidth * unselectedFlex;
+
+              final indicatorLeft = currentIndex * unselectedWidth + 6;
+              final indicatorWidth = selectedWidth - 12;
+
+              return Stack(
                 children: [
-                  // Sliding indicator background
+                  // Sliding pill indicator
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.fastOutSlowIn,
                     left: indicatorLeft,
                     width: indicatorWidth,
-                    top: 6,
-                    bottom: 6,
+                    top: 8,
+                    bottom: 8,
                     child: Container(
                       decoration: BoxDecoration(
                         color: isDark
                             ? theme.colorScheme.primary.withValues(alpha: 0.2)
                             : theme.colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(26),
+                        borderRadius: BorderRadius.circular(24),
                       ),
                     ),
                   ),
@@ -106,42 +115,45 @@ class AppBottomNav extends StatelessWidget {
                           onTap: () => onTap(index),
                           behavior: HitTestBehavior.opaque,
                           child: Center(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              physics: const NeverScrollableScrollPhysics(),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    isSelected ? item.activeIcon : item.icon,
-                                    color: isSelected
-                                        ? theme.colorScheme.primary
-                                        : (isDark ? Colors.white60 : Colors.black54),
-                                    size: 22,
-                                  ),
-                                  AnimatedSize(
-                                    duration: const Duration(milliseconds: 200),
-                                    curve: Curves.easeInOut,
-                                    child: isSelected
-                                        ? Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                item.label,
-                                                style: TextStyle(
-                                                  color: theme.colorScheme.primary,
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        : const SizedBox.shrink(),
-                                  ),
-                                ],
-                              ),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              child: isSelected
+                                  ? OverflowBox(
+                                      key: ValueKey('selected_$index'),
+                                      minWidth: 0,
+                                      maxWidth: double.infinity,
+                                      minHeight: 0,
+                                      maxHeight: double.infinity,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            item.activeIcon,
+                                            color: theme.colorScheme.primary,
+                                            size: 22,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            item.label,
+                                            style: TextStyle(
+                                              color: theme.colorScheme.primary,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : Icon(
+                                      key: ValueKey('unselected_$index'),
+                                      item.icon,
+                                      color: isDark
+                                          ? Colors.white60
+                                          : Colors.black54,
+                                      size: 22,
+                                    ),
                             ),
                           ),
                         ),
@@ -149,9 +161,9 @@ class AppBottomNav extends StatelessWidget {
                     }),
                   ),
                 ],
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -169,4 +181,3 @@ class _NavItem {
     required this.label,
   });
 }
-

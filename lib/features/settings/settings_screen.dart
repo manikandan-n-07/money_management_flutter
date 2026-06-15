@@ -51,14 +51,17 @@ class MoreScreen extends ConsumerWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(settings.userName.isNotEmpty ? settings.userName : 'User',
+                      Text(
+                          settings.userName.isNotEmpty
+                              ? settings.userName
+                              : 'User',
                           style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
                               fontSize: 18)),
                       const Text('Tap to edit profile',
-                          style: TextStyle(
-                              color: Colors.white70, fontSize: 12)),
+                          style:
+                              TextStyle(color: Colors.white70, fontSize: 12)),
                     ],
                   ),
                 ],
@@ -69,14 +72,11 @@ class MoreScreen extends ConsumerWidget {
           // Appearance
           const _SectionHeader('Appearance'),
           _SettingsItem(
-            icon: isDark
-                ? Icons.light_mode_rounded
-                : Icons.dark_mode_rounded,
+            icon: isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
             title: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
             subtitle: 'Currently: ${isDark ? "Dark" : "Light"} mode',
             color: AppColors.primary,
-            onTap: () =>
-                ref.read(themeNotifierProvider.notifier).toggleTheme(),
+            onTap: () => ref.read(themeNotifierProvider.notifier).toggleTheme(),
           ),
 
           // Currency
@@ -84,8 +84,7 @@ class MoreScreen extends ConsumerWidget {
           _SettingsItem(
             icon: Icons.currency_exchange_rounded,
             title: 'Currency',
-            subtitle:
-                '${settings.currencyCode} (${settings.currency})',
+            subtitle: '${settings.currencyCode} (${settings.currency})',
             color: AppColors.secondary,
             onTap: () => _showCurrencyPicker(context, ref),
           ),
@@ -159,9 +158,8 @@ class MoreScreen extends ConsumerWidget {
             subtitle: 'Monthly spending notification',
             value: settings.notifMonthly,
             color: AppColors.secondary,
-            onChanged: (v) => ref
-                .read(settingsNotifierProvider.notifier)
-                .setNotifMonthly(v),
+            onChanged: (v) =>
+                ref.read(settingsNotifierProvider.notifier).setNotifMonthly(v),
           ),
 
           // About
@@ -192,13 +190,15 @@ class MoreScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text('Select Currency',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700)),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700)),
           ),
           const Divider(height: 1),
           ...AppConstants.currencies.map((c) => ListTile(
-                leading: Text(c['symbol']!,
-                    style: const TextStyle(fontSize: 22)),
+                leading:
+                    Text(c['symbol']!, style: const TextStyle(fontSize: 22)),
                 title: Text(c['name']!),
                 subtitle: Text(c['code']!),
                 onTap: () {
@@ -317,10 +317,8 @@ class _SettingsItem extends StatelessWidget {
       ),
       title: Text(title,
           style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-      subtitle: Text(subtitle,
-          style: const TextStyle(fontSize: 12)),
-      trailing:
-          const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
       onTap: onTap,
     );
   }

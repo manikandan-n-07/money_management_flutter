@@ -15,7 +15,6 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/expense_card.dart';
 import 'add_expense_screen.dart';
 import 'edit_expense_screen.dart';
-import '../splits/add_split_screen.dart';
 
 class ExpenseListScreen extends ConsumerStatefulWidget {
   const ExpenseListScreen({super.key});
@@ -24,13 +23,9 @@ class ExpenseListScreen extends ConsumerStatefulWidget {
   ConsumerState<ExpenseListScreen> createState() => _ExpenseListScreenState();
 }
 
-class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen>
-    with SingleTickerProviderStateMixin {
+class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
   String _dateFilter = 'all';
   Timer? _timer;
-  bool _fabExpanded = false;
-  late AnimationController _fabCtrl;
-  late Animation<double> _fabAnim;
 
   @override
   void initState() {
@@ -38,27 +33,12 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen>
     _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       if (mounted) setState(() {});
     });
-    _fabCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 250));
-    _fabAnim = CurvedAnimation(parent: _fabCtrl, curve: Curves.easeOut);
   }
 
   @override
   void dispose() {
     _timer?.cancel();
-    _fabCtrl.dispose();
     super.dispose();
-  }
-
-  void _toggleFab() {
-    setState(() {
-      _fabExpanded = !_fabExpanded;
-      if (_fabExpanded) {
-        _fabCtrl.forward();
-      } else {
-        _fabCtrl.reverse();
-      }
-    });
   }
 
   List<ExpenseModel> _applyFilter(List<ExpenseModel> expenses) {
@@ -100,7 +80,8 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen>
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Delete Expense?'),
-        content: Text('Are you sure you want to permanently delete "${expense.place.isNotEmpty ? expense.place : 'this expense'}"?'),
+        content: Text(
+            'Are you sure you want to permanently delete "${expense.place.isNotEmpty ? expense.place : 'this expense'}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -240,69 +221,16 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen>
                 );
               },
             ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // Split FAB
-          ScaleTransition(
-            scale: _fabAnim,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: FloatingActionButton.extended(
-                heroTag: 'fab_expense_list_split',
-                shape: const StadiumBorder(),
-                onPressed: () {
-                  _toggleFab();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const AddSplitScreen()),
-                  );
-                },
-                icon: const Icon(Icons.group_add_rounded),
-                label: const Text('Split'),
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-                elevation: 4,
+      floatingActionButton: Navigator.canPop(context)
+          ? FloatingActionButton(
+              heroTag: 'fab_expense_list_add',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
               ),
-            ),
-          ),
-          // Expense FAB
-          ScaleTransition(
-            scale: _fabAnim,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: FloatingActionButton.extended(
-                heroTag: 'fab_expense_list_expense',
-                shape: const StadiumBorder(),
-                onPressed: () {
-                  _toggleFab();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const AddExpenseScreen()),
-                  );
-                },
-                icon: const Icon(Icons.receipt_long_rounded),
-                label: const Text('Expense'),
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 4,
-              ),
-            ),
-          ),
-          // Main FAB
-          FloatingActionButton(
-            heroTag: 'fab_expense_list_main',
-            onPressed: _toggleFab,
-            backgroundColor: _fabExpanded ? AppColors.error : AppColors.primary,
-            child: AnimatedRotation(
-              turns: _fabExpanded ? 0.125 : 0,
-              duration: const Duration(milliseconds: 250),
+              backgroundColor: AppColors.primary,
               child: const Icon(Icons.add_rounded, size: 28),
-            ),
-          ),
-        ],
-      ),
+            )
+          : null,
     );
   }
 }

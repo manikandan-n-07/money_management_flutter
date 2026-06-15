@@ -8,7 +8,6 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/split_card.dart';
 import 'add_split_screen.dart';
 import 'split_detail_screen.dart';
-import '../expenses/add_expense_screen.dart';
 
 class SplitsListScreen extends ConsumerStatefulWidget {
   const SplitsListScreen({super.key});
@@ -17,12 +16,8 @@ class SplitsListScreen extends ConsumerStatefulWidget {
   ConsumerState<SplitsListScreen> createState() => _SplitsListScreenState();
 }
 
-class _SplitsListScreenState extends ConsumerState<SplitsListScreen>
-    with SingleTickerProviderStateMixin {
+class _SplitsListScreenState extends ConsumerState<SplitsListScreen> {
   Timer? _timer;
-  bool _fabExpanded = false;
-  late AnimationController _fabCtrl;
-  late Animation<double> _fabAnim;
 
   @override
   void initState() {
@@ -30,27 +25,12 @@ class _SplitsListScreenState extends ConsumerState<SplitsListScreen>
     _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       if (mounted) setState(() {});
     });
-    _fabCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 250));
-    _fabAnim = CurvedAnimation(parent: _fabCtrl, curve: Curves.easeOut);
   }
 
   @override
   void dispose() {
     _timer?.cancel();
-    _fabCtrl.dispose();
     super.dispose();
-  }
-
-  void _toggleFab() {
-    setState(() {
-      _fabExpanded = !_fabExpanded;
-      if (_fabExpanded) {
-        _fabCtrl.forward();
-      } else {
-        _fabCtrl.reverse();
-      }
-    });
   }
 
   @override
@@ -113,8 +93,7 @@ class _SplitsListScreenState extends ConsumerState<SplitsListScreen>
                             children: [
                               const Text('Total Pending',
                                   style: TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.error)),
+                                      fontSize: 11, color: AppColors.error)),
                               Text(
                                 '₹${pendingAmount.toStringAsFixed(0)}',
                                 style: const TextStyle(
@@ -151,23 +130,28 @@ class _SplitsListScreenState extends ConsumerState<SplitsListScreen>
                           ),
                         ),
                         onEdit: () {
-                          SplitDetailScreen.showEditSplitDialog(context, ref, split);
+                          SplitDetailScreen.showEditSplitDialog(
+                              context, ref, split);
                         },
                         onDelete: () async {
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
                               title: const Text('Delete Split?'),
-                              content: Text('Are you sure you want to permanently delete "${split.description}"?'),
+                              content: Text(
+                                  'Are you sure you want to permanently delete "${split.description}"?'),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
                                   child: const Text('Cancel'),
                                 ),
                                 FilledButton(
                                   onPressed: () => Navigator.pop(context, true),
-                                  style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                                  style: FilledButton.styleFrom(
+                                      backgroundColor: AppColors.error),
                                   child: const Text('Delete'),
                                 ),
                               ],
@@ -192,69 +176,16 @@ class _SplitsListScreenState extends ConsumerState<SplitsListScreen>
                 ),
               ],
             ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // Split FAB
-          ScaleTransition(
-            scale: _fabAnim,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: FloatingActionButton.extended(
-                heroTag: 'fab_splits_list_split',
-                shape: const StadiumBorder(),
-                onPressed: () {
-                  _toggleFab();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const AddSplitScreen()),
-                  );
-                },
-                icon: const Icon(Icons.group_add_rounded),
-                label: const Text('Split'),
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-                elevation: 4,
+      floatingActionButton: Navigator.canPop(context)
+          ? FloatingActionButton(
+              heroTag: 'fab_splits_list_add',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AddSplitScreen()),
               ),
-            ),
-          ),
-          // Expense FAB
-          ScaleTransition(
-            scale: _fabAnim,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: FloatingActionButton.extended(
-                heroTag: 'fab_splits_list_expense',
-                shape: const StadiumBorder(),
-                onPressed: () {
-                  _toggleFab();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const AddExpenseScreen()),
-                  );
-                },
-                icon: const Icon(Icons.receipt_long_rounded),
-                label: const Text('Expense'),
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 4,
-              ),
-            ),
-          ),
-          // Main FAB
-          FloatingActionButton(
-            heroTag: 'fab_splits_list_main',
-            onPressed: _toggleFab,
-            backgroundColor: _fabExpanded ? AppColors.error : AppColors.primary,
-            child: AnimatedRotation(
-              turns: _fabExpanded ? 0.125 : 0,
-              duration: const Duration(milliseconds: 250),
+              backgroundColor: AppColors.primary,
               child: const Icon(Icons.add_rounded, size: 28),
-            ),
-          ),
-        ],
-      ),
+            )
+          : null,
     );
   }
 }

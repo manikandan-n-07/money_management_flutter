@@ -14,6 +14,7 @@ class SettingsState {
   final int dailyReminderHour;
   final int dailyReminderMin;
   final String userName;
+  final bool isLoaded;
 
   const SettingsState({
     this.currency = '₹',
@@ -24,6 +25,7 @@ class SettingsState {
     this.dailyReminderHour = 21,
     this.dailyReminderMin = 0,
     this.userName = '',
+    this.isLoaded = false,
   });
 
   SettingsState copyWith({
@@ -35,6 +37,7 @@ class SettingsState {
     int? dailyReminderHour,
     int? dailyReminderMin,
     String? userName,
+    bool? isLoaded,
   }) {
     return SettingsState(
       currency: currency ?? this.currency,
@@ -45,6 +48,7 @@ class SettingsState {
       dailyReminderHour: dailyReminderHour ?? this.dailyReminderHour,
       dailyReminderMin: dailyReminderMin ?? this.dailyReminderMin,
       userName: userName ?? this.userName,
+      isLoaded: isLoaded ?? this.isLoaded,
     );
   }
 }
@@ -65,6 +69,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       dailyReminderHour: prefs.getInt(AppConstants.dailyReminderHourKey) ?? 21,
       dailyReminderMin: prefs.getInt(AppConstants.dailyReminderMinKey) ?? 0,
       userName: prefs.getString('user_name') ?? '',
+      isLoaded: true,
     );
   }
 

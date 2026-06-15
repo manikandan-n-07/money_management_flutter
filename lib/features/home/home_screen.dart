@@ -23,7 +23,6 @@ import '../../widgets/app_logo.dart';
 import '../expenses/add_expense_screen.dart';
 import '../expenses/expense_list_screen.dart';
 import '../search/search_screen.dart';
-import '../splits/add_split_screen.dart';
 import '../splits/split_detail_screen.dart';
 import '../splits/splits_list_screen.dart';
 
@@ -34,28 +33,17 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  bool _fabExpanded = false;
-  late AnimationController _fabCtrl;
-  late Animation<double> _fabAnim;
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   Timer? _timer;
+  bool _dialogShown = false;
 
   @override
   void initState() {
     super.initState();
-    _fabCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 250));
-    _fabAnim = CurvedAnimation(parent: _fabCtrl, curve: Curves.easeOut);
     _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       if (mounted) setState(() {});
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final settings = ref.read(settingsNotifierProvider);
-      if (settings.userName.isEmpty) {
-        _showNameAndNotifDialog();
-      }
-    });
+    // Dialog is triggered reactively via ref.listen in build, not here
   }
 
   void _showNameAndNotifDialog() {
@@ -199,20 +187,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   void dispose() {
-    _fabCtrl.dispose();
     _timer?.cancel();
     super.dispose();
-  }
-
-  void _toggleFab() {
-    setState(() {
-      _fabExpanded = !_fabExpanded;
-      if (_fabExpanded) {
-        _fabCtrl.forward();
-      } else {
-        _fabCtrl.reverse();
-      }
-    });
   }
 
   String _greeting() {
@@ -226,6 +202,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final settings = ref.watch(settingsNotifierProvider);
     final symbol = ref.watch(currencySymbolProvider);
     final todayTotal = ref.watch(todayTotalProvider);
     final weekTotal = ref.watch(thisWeekTotalProvider);
@@ -234,6 +211,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final recentSplits = ref.watch(pendingSplitsProvider).take(3).toList();
     final budget = ref.watch(currentBudgetProvider);
     final spent = ref.watch(thisMonthSpentProvider);
+
+    // Show onboarding dialog only once after settings have loaded from storage
+    if (!_dialogShown && settings.isLoaded && settings.userName.isEmpty) {
+      _dialogShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showNameAndNotifDialog();
+      });
+    }
 
     return Scaffold(
       backgroundColor:
@@ -407,68 +392,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
         ],
       ),
-      // === Speed-dial FAB ===
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // Split FAB (hidden unless expanded)
-          ScaleTransition(
-            scale: _fabAnim,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: FloatingActionButton.extended(
-                heroTag: 'fab_split',
-                shape: const StadiumBorder(),
-                onPressed: () {
-                  _toggleFab();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const AddSplitScreen()),
-                  );
-                },
-                icon: const Icon(Icons.group_add_rounded),
-                label: const Text('Split'),
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-                elevation: 4,
-              ),
-            ),
-          ),
-          // Expense FAB (hidden unless expanded)
-          ScaleTransition(
-            scale: _fabAnim,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: FloatingActionButton.extended(
-                heroTag: 'fab_expense',
-                shape: const StadiumBorder(),
-                onPressed: () {
-                  _toggleFab();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
-                  );
-                },
-                icon: const Icon(Icons.receipt_long_rounded),
-                label: const Text('Expense'),
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 4,
-              ),
-            ),
-          ),
-          // Main FAB
-          FloatingActionButton(
-            heroTag: 'fab_main',
-            onPressed: _toggleFab,
-            backgroundColor: _fabExpanded ? AppColors.error : AppColors.primary,
-            child: AnimatedRotation(
-              turns: _fabExpanded ? 0.125 : 0,
-              duration: const Duration(milliseconds: 250),
-              child: const Icon(Icons.add_rounded, size: 28),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -489,36 +412,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Logo + greeting row
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    '${_greeting()}, ${ref.watch(settingsNotifierProvider).userName.isNotEmpty ? ref.watch(settingsNotifierProvider).userName : 'User'}',
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                  const SizedBox(width: 6),
-                  GestureDetector(
-                    onTap: () => _showEditNameDialog(context),
-                    child: Icon(
-                      Icons.edit_rounded,
-                      size: 14,
-                      color: isDark ? Colors.white60 : Colors.black54,
+                  const AppLogo(size: 40),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              '${_greeting()}, ${ref.watch(settingsNotifierProvider).userName.isNotEmpty ? ref.watch(settingsNotifierProvider).userName : 'User'}',
+                              style: theme.textTheme.bodyMedium?.copyWith(fontSize: 14),
+                            ),
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: () => _showEditNameDialog(context),
+                              child: Icon(
+                                Icons.edit_rounded,
+                                size: 14,
+                                color: isDark ? Colors.white60 : Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(AppConstants.appName,
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.primary,
+                              fontSize: 22,
+                            )),
+                        Text(
+                          DateFormat('dd MMMM yyyy, hh:mm a').format(DateTime.now()),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 2),
-              Text(AppConstants.appName,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                  )),
-              const SizedBox(height: 4),
-              Text(
-                DateFormat('dd MMMM yyyy, hh:mm a').format(DateTime.now()),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
               ),
             ],
           ),

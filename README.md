@@ -104,23 +104,3 @@ flutter build appbundle --release
 ```
 
 ---
-
-## 📂 Project Structure
-
-```
-lib/
-├── core/
-│   ├── constants/       # Color tokens, categories, and keys
-│   ├── theme/           # Light & Dark theme definitions
-│   └── utils/           # Formatters for currency and dates
-├── features/
-│   ├── budget/          # Budget screen widgets
-│   ├── expenses/        # Transactions & add/edit screens
-│   ├── home/            # Onboarding welcome dialog, quick trends
-│   ├── reports/         # PDF and Excel report builders
-│   ├── splits/          # Split list, settlement logic, detail views
-│   └── splash/          # Snappy splash screen launcher
-├── models/              # Hive adapters (Expense, Split, Budget, Member)
-├── providers/           # Riverpod state managers (Settings, Theme, Split, Expense)
-└── services/            # File system, notifications, and export handlers
-```

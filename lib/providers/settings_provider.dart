@@ -14,6 +14,8 @@ class SettingsState {
   final int dailyReminderHour;
   final int dailyReminderMin;
   final String userName;
+  final String fontFamily;
+  final double textScale;
   final bool isLoaded;
 
   const SettingsState({
@@ -25,6 +27,8 @@ class SettingsState {
     this.dailyReminderHour = 21,
     this.dailyReminderMin = 0,
     this.userName = '',
+    this.fontFamily = 'Poppins',
+    this.textScale = 1.0,
     this.isLoaded = false,
   });
 
@@ -37,6 +41,8 @@ class SettingsState {
     int? dailyReminderHour,
     int? dailyReminderMin,
     String? userName,
+    String? fontFamily,
+    double? textScale,
     bool? isLoaded,
   }) {
     return SettingsState(
@@ -48,6 +54,8 @@ class SettingsState {
       dailyReminderHour: dailyReminderHour ?? this.dailyReminderHour,
       dailyReminderMin: dailyReminderMin ?? this.dailyReminderMin,
       userName: userName ?? this.userName,
+      fontFamily: fontFamily ?? this.fontFamily,
+      textScale: textScale ?? this.textScale,
       isLoaded: isLoaded ?? this.isLoaded,
     );
   }
@@ -69,6 +77,8 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       dailyReminderHour: prefs.getInt(AppConstants.dailyReminderHourKey) ?? 21,
       dailyReminderMin: prefs.getInt(AppConstants.dailyReminderMinKey) ?? 0,
       userName: prefs.getString('user_name') ?? '',
+      fontFamily: prefs.getString('font_family') ?? 'Poppins',
+      textScale: prefs.getDouble('text_scale') ?? 1.0,
       isLoaded: true,
     );
   }
@@ -109,6 +119,18 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(AppConstants.dailyReminderHourKey, hour);
     await prefs.setInt(AppConstants.dailyReminderMinKey, minute);
+  }
+
+  Future<void> setFontFamily(String family) async {
+    state = state.copyWith(fontFamily: family);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('font_family', family);
+  }
+
+  Future<void> setTextScale(double scale) async {
+    state = state.copyWith(textScale: scale);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('text_scale', scale);
   }
 }
 

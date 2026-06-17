@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/theme_provider.dart';
+import 'providers/settings_provider.dart';
 import 'services/hive_service.dart';
 import 'services/notification_service.dart';
 import 'features/home/home_screen.dart';
@@ -16,6 +17,7 @@ import 'features/statistics/statistics_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/splash/splash_screen.dart';
 import 'widgets/app_bottom_nav.dart';
+import 'widgets/floating_banner_overlay.dart';
 import 'features/expenses/add_expense_screen.dart';
 import 'features/splits/add_split_screen.dart';
 import 'core/constants/app_colors.dart';
@@ -50,13 +52,22 @@ class CashierApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeNotifierProvider);
+    final settings = ref.watch(settingsNotifierProvider);
 
     return MaterialApp(
       title: 'Cashier',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.getLightTheme(settings.fontFamily),
+      darkTheme: AppTheme.getDarkTheme(settings.fontFamily),
       themeMode: themeMode,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(settings.textScale),
+          ),
+          child: child!,
+        );
+      },
       home: const SplashScreen(),
     );
   }
@@ -178,24 +189,41 @@ class _AppShellState extends ConsumerState<AppShell>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       ),
-      bottomNavigationBar: AppBottomNav(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          if (_fabExpanded) {
-            _toggleFab();
-          }
-          setState(() => _currentIndex = index);
-        },
+      child: Scaffold(
+        extendBody: true,
+        body: Stack(
+          children: [
+            IndexedStack(
+              index: _currentIndex,
+              children: _pages,
+            ),
+            const FloatingBannerOverlay(),
+          ],
+        ),
+        bottomNavigationBar: AppBottomNav(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            if (_fabExpanded) {
+              _toggleFab();
+            }
+            setState(() => _currentIndex = index);
+          },
+        ),
+        floatingActionButton:
+            (_currentIndex == 0 || _currentIndex == 1 || _currentIndex == 2)
+                ? _buildSpeedDialFab()
+                : null,
       ),
-      floatingActionButton: (_currentIndex == 0 || _currentIndex == 1 || _currentIndex == 2)
-          ? _buildSpeedDialFab()
-          : null,
     );
   }
 }

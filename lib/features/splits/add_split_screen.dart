@@ -10,9 +10,11 @@ import '../../models/split_expense_model.dart';
 import '../../models/split_member_model.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/split_provider.dart';
+import '../../widgets/wave_header.dart';
 
 class AddSplitScreen extends ConsumerStatefulWidget {
-  const AddSplitScreen({super.key});
+  final String? initialDescription;
+  const AddSplitScreen({super.key, this.initialDescription});
 
   @override
   ConsumerState<AddSplitScreen> createState() => _AddSplitScreenState();
@@ -21,6 +23,14 @@ class AddSplitScreen extends ConsumerStatefulWidget {
 class _AddSplitScreenState extends ConsumerState<AddSplitScreen> {
   final _pageCtrl = PageController();
   int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialDescription != null) {
+      _descriptionCtrl.text = widget.initialDescription!;
+    }
+  }
 
   // Step 1: Payer
   PayerType _payerType = PayerType.me;
@@ -71,9 +81,8 @@ class _AddSplitScreenState extends ConsumerState<AddSplitScreen> {
   }
 
   bool _canProceedStep2() {
-    final amount =
-        double.tryParse(_totalAmountCtrl.text.replaceAll(',', ''));
-    return amount != null && amount > 0 && _descriptionCtrl.text.trim().isNotEmpty;
+    final amount = double.tryParse(_totalAmountCtrl.text.replaceAll(',', ''));
+    return amount != null && amount > 0;
   }
 
   bool _canProceedStep3() => _memberNames.length >= 2;
@@ -89,8 +98,8 @@ class _AddSplitScreenState extends ConsumerState<AddSplitScreen> {
     if (trimmed.isEmpty || _memberNames.contains(trimmed)) return;
     setState(() {
       _memberNames.add(trimmed);
-      _shareControllers.add(TextEditingController(
-          text: _equalShare.toStringAsFixed(2)));
+      _shareControllers
+          .add(TextEditingController(text: _equalShare.toStringAsFixed(2)));
     });
     _memberNameCtrl.clear();
   }
@@ -130,7 +139,9 @@ class _AddSplitScreenState extends ConsumerState<AddSplitScreen> {
               ? _friendNameCtrl.text.trim()
               : null,
           totalAmount: _totalAmount,
-          description: _descriptionCtrl.text.trim(),
+          description: _descriptionCtrl.text.trim().isNotEmpty
+              ? _descriptionCtrl.text.trim()
+              : 'Split Expense',
           dateTime: _selectedDate,
           members: members,
           isEqualSplit: _isEqualSplit,
@@ -149,15 +160,15 @@ class _AddSplitScreenState extends ConsumerState<AddSplitScreen> {
     final settings = ref.watch(settingsNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_stepTitle()),
+      appBar: WaveHeader(
+        title: _stepTitle(),
+        height: 100,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
           child: LinearProgressIndicator(
             value: (_currentPage + 1) / 4,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-            valueColor:
-                const AlwaysStoppedAnimation<Color>(AppColors.primary),
+            backgroundColor: Colors.white.withValues(alpha: 0.2),
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             minHeight: 4,
           ),
         ),
@@ -236,7 +247,8 @@ class _AddSplitScreenState extends ConsumerState<AddSplitScreen> {
                 ),
                 child: _isSaving
                     ? const SizedBox(
-                        width: 20, height: 20,
+                        width: 20,
+                        height: 20,
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white),
                       )
@@ -255,21 +267,31 @@ class _AddSplitScreenState extends ConsumerState<AddSplitScreen> {
 
   String _stepTitle() {
     switch (_currentPage) {
-      case 0: return 'Who Paid?';
-      case 1: return 'Expense Details';
-      case 2: return 'Add Members';
-      case 3: return 'Split Mode';
-      default: return 'Split Expense';
+      case 0:
+        return 'Who Paid?';
+      case 1:
+        return 'Expense Details';
+      case 2:
+        return 'Add Members';
+      case 3:
+        return 'Split Mode';
+      default:
+        return 'Split Expense';
     }
   }
 
   bool _canProceedCurrentStep() {
     switch (_currentPage) {
-      case 0: return _canProceedStep1();
-      case 1: return _canProceedStep2();
-      case 2: return _canProceedStep3();
-      case 3: return true;
-      default: return false;
+      case 0:
+        return _canProceedStep1();
+      case 1:
+        return _canProceedStep2();
+      case 2:
+        return _canProceedStep3();
+      case 3:
+        return true;
+      default:
+        return false;
     }
   }
 }
@@ -389,13 +411,11 @@ class _PayerOption extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                           )),
-                  Text(subtitle,
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             ),
-            if (selected)
-              Icon(Icons.check_circle_rounded, color: color),
+            if (selected) Icon(Icons.check_circle_rounded, color: color),
           ],
         ),
       ),
@@ -475,15 +495,7 @@ class _Step2ExpenseInfo extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           GestureDetector(
-            onTap: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: selectedDate,
-                firstDate: DateTime(2020),
-                lastDate: DateTime.now(),
-              );
-              if (picked != null) onDateChanged(picked);
-            },
+            onTap: null, // Read-only: Date/time automatically taken
             child: InputDecorator(
               decoration: const InputDecoration(
                 labelText: 'Date',
@@ -547,7 +559,8 @@ class _Step3Members extends StatelessWidget {
                   Text(
                       '${memberNames.length} people · $symbol${equalShare.toStringAsFixed(2)} each',
                       style: const TextStyle(
-                          color: AppColors.primary, fontWeight: FontWeight.w600)),
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -591,7 +604,8 @@ class _Step3Members extends StatelessWidget {
                     itemBuilder: (context, index) {
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                          backgroundColor:
+                              AppColors.primary.withValues(alpha: 0.15),
                           child: Text(
                             memberNames[index][0].toUpperCase(),
                             style: const TextStyle(
@@ -638,9 +652,8 @@ class _Step4SplitMode extends StatelessWidget {
     required this.onModeChanged,
   });
 
-  double get _assignedTotal => shareControllers.fold(
-      0.0,
-      (s, c) => s + (double.tryParse(c.text) ?? 0));
+  double get _assignedTotal =>
+      shareControllers.fold(0.0, (s, c) => s + (double.tryParse(c.text) ?? 0));
 
   @override
   Widget build(BuildContext context) {
@@ -720,7 +733,8 @@ class _Step4SplitMode extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 18,
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                        backgroundColor:
+                            AppColors.primary.withValues(alpha: 0.15),
                         child: Text(
                           memberNames[index][0].toUpperCase(),
                           style: const TextStyle(
@@ -739,8 +753,8 @@ class _Step4SplitMode extends StatelessWidget {
                         child: TextField(
                           controller: shareControllers[index],
                           enabled: !isEqualSplit,
-                          keyboardType:
-                              const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
                           ],

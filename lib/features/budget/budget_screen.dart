@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../providers/banner_provider.dart';
 import '../../services/budget_service.dart';
 import '../../widgets/budget_progress_bar.dart';
 
@@ -35,8 +36,8 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
         double.tryParse(_savingsCtrl.text.replaceAll(',', '')) ?? 0.0;
 
     if (budget == null || budget <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a valid budget amount')),
+      ref.read(bannerNotifierProvider.notifier).show(
+        message: 'Enter a valid budget amount',
       );
       return;
     }
@@ -48,8 +49,8 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
 
     if (mounted) {
       setState(() => _showForm = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Budget updated!')),
+      ref.read(bannerNotifierProvider.notifier).show(
+        message: '✅ Budget updated!',
       );
     }
   }

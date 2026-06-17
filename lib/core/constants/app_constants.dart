@@ -33,6 +33,7 @@ class AppConstants {
   static const int dailyNotifId = 1001;
   static const int budgetNotifId = 1002;
   static const int monthlyNotifId = 1003;
+  static const int goodJobNotifId = 1004;
 
   // Budget warning thresholds
   static const double budgetWarnPct = 0.60;

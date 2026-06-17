@@ -10,6 +10,7 @@ import '../../models/split_expense_model.dart';
 import '../../models/split_member_model.dart';
 import '../../providers/split_provider.dart';
 import '../../services/split_service.dart';
+import '../../providers/banner_provider.dart';
 
 class SplitDetailScreen extends ConsumerWidget {
   final String splitId;
@@ -324,20 +325,20 @@ class SplitDetailScreen extends ConsumerWidget {
                     final friendName = tempPayer == PayerType.friend ? friendNameController.text.trim() : null;
 
                     if (desc.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please enter a description')),
+                      ref.read(bannerNotifierProvider.notifier).show(
+                        message: 'Please enter a description',
                       );
                       return;
                     }
                     if (amount <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please enter a valid amount')),
+                      ref.read(bannerNotifierProvider.notifier).show(
+                        message: 'Please enter a valid amount',
                       );
                       return;
                     }
                     if (tempPayer == PayerType.friend && (friendName == null || friendName.isEmpty)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please enter friend name')),
+                      ref.read(bannerNotifierProvider.notifier).show(
+                        message: 'Please enter friend name',
                       );
                       return;
                     }

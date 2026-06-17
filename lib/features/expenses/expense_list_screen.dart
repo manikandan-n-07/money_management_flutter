@@ -6,15 +6,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_constants.dart';
+
 import '../../core/utils/date_formatter.dart';
 import '../../models/expense_model.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/expense_card.dart';
+import '../../widgets/premium_app_bar.dart';
+import '../../widgets/flow_entrance_animation.dart';
+
 import 'add_expense_screen.dart';
 import 'edit_expense_screen.dart';
+import '../../providers/banner_provider.dart';
 
 class ExpenseListScreen extends ConsumerStatefulWidget {
   const ExpenseListScreen({super.key});
@@ -64,7 +68,6 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
     }
   }
 
-  /// Group expenses by day
   Map<String, List<ExpenseModel>> _groupByDay(List<ExpenseModel> expenses) {
     final Map<String, List<ExpenseModel>> grouped = {};
     for (final e in expenses) {
@@ -98,20 +101,13 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
 
     if (confirm == true) {
       ref.read(expenseNotifierProvider.notifier).deleteExpense(expense.id);
-
       if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Expense deleted'),
-            action: SnackBarAction(
-              label: 'Undo',
-              onPressed: () {
-                ref.read(expenseNotifierProvider.notifier).undoDelete(expense);
-              },
-            ),
-            duration: AppConstants.undoDeleteDuration,
-          ),
+        ref.read(bannerNotifierProvider.notifier).show(
+          message: 'Expense deleted',
+          actionLabel: 'Undo',
+          onAction: () {
+            ref.read(expenseNotifierProvider.notifier).undoDelete(expense);
+          },
         );
       }
     }
@@ -123,104 +119,124 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
     final filtered = _applyFilter(allExpenses);
     final grouped = _groupByDay(filtered);
     final symbol = ref.watch(currencySymbolProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Expenses'),
-            const SizedBox(height: 2),
-            Text(
-              DateFormat('dd MMMM yyyy, hh:mm a').format(DateTime.now()),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_rounded),
-            onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
-              );
-            },
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(52),
-          child: _FilterBar(
-            selected: _dateFilter,
-            onChanged: (f) => setState(() => _dateFilter = f),
-          ),
-        ),
-      ),
-      body: filtered.isEmpty
-          ? EmptyExpenses(
-              onAdd: () => Navigator.of(context).push(
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      body: CustomScrollView(
+        slivers: [
+          PremiumSliverAppBar(
+            title: 'Expenses',
+            subtitle: DateFormat('dd MMM yyyy').format(DateTime.now()),
+            emoji: '💸',
+            expandedHeight: 140,
+            lightColors: const [
+              Color(0xFF2E86AB),
+              Color(0xFF4A6FA5),
+              Color(0xFF1A5276)
+            ],
+            darkColors: const [
+              Color(0xFF0A1A2E),
+              Color(0xFF0D2A40),
+              Color(0xFF081A30)
+            ],
+            action: PremiumActionButton(
+              icon: Icons.add_rounded,
+              onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
               ),
-            )
-          : ListView.builder(
-              itemCount: grouped.keys.length,
-              padding: const EdgeInsets.only(bottom: 80),
-              itemBuilder: (context, groupIndex) {
-                final dateKey = grouped.keys.elementAt(groupIndex);
-                final dayExpenses = grouped[dateKey]!;
-                final dayTotal = dayExpenses.fold(0.0, (s, e) => s + e.amount);
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Date group header
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            dateKey,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.primary,
-                                ),
-                          ),
-                          Text(
-                            '$symbol${dayTotal.toStringAsFixed(0)}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelMedium
-                                ?.copyWith(
-                                  color: AppColors.accent,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Expense cards
-                    ...dayExpenses.map((e) => ExpenseCard(
-                          expense: e,
-                          onDelete: () => _deleteWithUndo(e),
-                          onEdit: () async {
-                            await Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => EditExpenseScreen(expense: e),
-                              ),
-                            );
-                          },
-                        )),
-                    const Divider(height: 1),
-                  ],
-                );
-              },
             ),
+          ),
+
+          // Filter bar
+          SliverToBoxAdapter(
+            child: FlowEntranceAnimation(
+              delay: const Duration(milliseconds: 50),
+              child: _FilterBar(
+                selected: _dateFilter,
+                onChanged: (f) => setState(() => _dateFilter = f),
+              ),
+            ),
+          ),
+
+
+
+
+          // Content
+          if (filtered.isEmpty)
+            SliverFillRemaining(
+              child: EmptyExpenses(
+                onAdd: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
+                ),
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, groupIndex) {
+                  final dateKey = grouped.keys.elementAt(groupIndex);
+                  final dayExpenses = grouped[dateKey]!;
+                  final dayTotal =
+                      dayExpenses.fold(0.0, (s, e) => s + e.amount);
+
+                  return FlowEntranceAnimation(
+                    delay: Duration(milliseconds: 100 + groupIndex * 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                dateKey,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primary,
+                                    ),
+                              ),
+                              Text(
+                                '$symbol${dayTotal.toStringAsFixed(0)}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelMedium
+                                    ?.copyWith(
+                                      color: AppColors.accent,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ...dayExpenses.map((e) => ExpenseCard(
+                              expense: e,
+                              onDelete: () => _deleteWithUndo(e),
+                              onEdit: () async {
+                                await Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => EditExpenseScreen(expense: e),
+                                  ),
+                                );
+                              },
+                            )),
+                        const Divider(height: 1),
+                      ],
+                    ),
+                  );
+                },
+                childCount: grouped.keys.length,
+              ),
+            ),
+
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
+      ),
       floatingActionButton: Navigator.canPop(context)
           ? FloatingActionButton(
               heroTag: 'fab_expense_list_add',

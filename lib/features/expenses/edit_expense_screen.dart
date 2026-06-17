@@ -11,6 +11,7 @@ import '../../models/expense_model.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../widgets/category_selector.dart';
+import '../../providers/banner_provider.dart';
 
 class EditExpenseScreen extends ConsumerStatefulWidget {
   final ExpenseModel expense;
@@ -76,8 +77,9 @@ class _EditExpenseScreenState extends ConsumerState<EditExpenseScreen> {
   Future<void> _save() async {
     final amount = double.tryParse(_amountCtrl.text.replaceAll(',', ''));
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Enter a valid amount')));
+      ref.read(bannerNotifierProvider.notifier).show(
+        message: 'Enter a valid amount',
+      );
       return;
     }
 

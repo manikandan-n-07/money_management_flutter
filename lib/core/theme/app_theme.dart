@@ -10,90 +10,90 @@ class AppTheme {
   AppTheme._();
 
   // === Text Themes ===
-  static TextTheme _buildTextTheme(Color textColor, Color secondaryColor) {
-    return GoogleFonts.interTextTheme(
+  static TextTheme _buildTextTheme(Color textColor, Color secondaryColor, String fontFamily) {
+    return GoogleFonts.getTextTheme(fontFamily, 
       TextTheme(
-        displayLarge: GoogleFonts.inter(
+        displayLarge: GoogleFonts.getFont(fontFamily, 
           fontSize: 57,
           fontWeight: FontWeight.w700,
           color: textColor,
           letterSpacing: -0.25,
         ),
-        displayMedium: GoogleFonts.inter(
+        displayMedium: GoogleFonts.getFont(fontFamily, 
           fontSize: 45,
           fontWeight: FontWeight.w700,
           color: textColor,
         ),
-        displaySmall: GoogleFonts.inter(
+        displaySmall: GoogleFonts.getFont(fontFamily, 
           fontSize: 36,
           fontWeight: FontWeight.w600,
           color: textColor,
         ),
-        headlineLarge: GoogleFonts.inter(
+        headlineLarge: GoogleFonts.getFont(fontFamily, 
           fontSize: 32,
           fontWeight: FontWeight.w700,
           color: textColor,
           letterSpacing: -0.5,
         ),
-        headlineMedium: GoogleFonts.inter(
+        headlineMedium: GoogleFonts.getFont(fontFamily, 
           fontSize: 24,
           fontWeight: FontWeight.w600,
           color: textColor,
           letterSpacing: -0.3,
         ),
-        headlineSmall: GoogleFonts.inter(
+        headlineSmall: GoogleFonts.getFont(fontFamily, 
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: textColor,
         ),
-        titleLarge: GoogleFonts.inter(
+        titleLarge: GoogleFonts.getFont(fontFamily, 
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: textColor,
         ),
-        titleMedium: GoogleFonts.inter(
+        titleMedium: GoogleFonts.getFont(fontFamily, 
           fontSize: 16,
           fontWeight: FontWeight.w500,
           color: textColor,
           letterSpacing: 0.15,
         ),
-        titleSmall: GoogleFonts.inter(
+        titleSmall: GoogleFonts.getFont(fontFamily, 
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: textColor,
           letterSpacing: 0.1,
         ),
-        bodyLarge: GoogleFonts.inter(
+        bodyLarge: GoogleFonts.getFont(fontFamily, 
           fontSize: 16,
           fontWeight: FontWeight.w400,
           color: textColor,
           letterSpacing: 0.5,
         ),
-        bodyMedium: GoogleFonts.inter(
+        bodyMedium: GoogleFonts.getFont(fontFamily, 
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: secondaryColor,
           letterSpacing: 0.25,
         ),
-        bodySmall: GoogleFonts.inter(
+        bodySmall: GoogleFonts.getFont(fontFamily, 
           fontSize: 12,
           fontWeight: FontWeight.w400,
           color: secondaryColor,
           letterSpacing: 0.4,
         ),
-        labelLarge: GoogleFonts.inter(
+        labelLarge: GoogleFonts.getFont(fontFamily, 
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: textColor,
           letterSpacing: 0.1,
         ),
-        labelMedium: GoogleFonts.inter(
+        labelMedium: GoogleFonts.getFont(fontFamily, 
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: secondaryColor,
           letterSpacing: 0.5,
         ),
-        labelSmall: GoogleFonts.inter(
+        labelSmall: GoogleFonts.getFont(fontFamily, 
           fontSize: 11,
           fontWeight: FontWeight.w500,
           color: secondaryColor,
@@ -104,7 +104,7 @@ class AppTheme {
   }
 
   // === Dark Theme ===
-  static ThemeData get darkTheme {
+  static ThemeData getDarkTheme(String fontFamily) {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
@@ -126,7 +126,7 @@ class AppTheme {
       brightness: Brightness.dark,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.darkBackground,
-      textTheme: _buildTextTheme(AppColors.darkText, AppColors.darkTextSecondary),
+      textTheme: _buildTextTheme(AppColors.darkText, AppColors.darkTextSecondary, fontFamily),
 
       // AppBar
       appBarTheme: AppBarTheme(
@@ -135,7 +135,7 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.light,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: GoogleFonts.getFont(fontFamily, 
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: AppColors.darkText,
@@ -154,13 +154,13 @@ class AppTheme {
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return GoogleFonts.inter(
+            return GoogleFonts.getFont(fontFamily, 
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: AppColors.primary,
             );
           }
-          return GoogleFonts.inter(
+          return GoogleFonts.getFont(fontFamily, 
             fontSize: 12,
             fontWeight: FontWeight.w400,
             color: AppColors.darkTextMuted,
@@ -185,10 +185,12 @@ class AppTheme {
       // Chips
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.darkCard,
-        selectedColor: AppColors.primary.withValues(alpha: 0.2),
+        selectedColor: AppColors.primary.withValues(alpha: 0.35),
+        checkmarkColor: AppColors.primary,
         side: const BorderSide(color: AppColors.darkCardBorder),
-        labelStyle: GoogleFonts.inter(fontSize: 13, color: AppColors.darkText),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        labelStyle: GoogleFonts.getFont(fontFamily, fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.darkText),
+        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
 
       // FloatingActionButton
@@ -226,8 +228,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.error),
         ),
-        labelStyle: GoogleFonts.inter(color: AppColors.darkTextSecondary),
-        hintStyle: GoogleFonts.inter(color: AppColors.darkTextMuted),
+        labelStyle: GoogleFonts.getFont(fontFamily, color: AppColors.darkTextSecondary),
+        hintStyle: GoogleFonts.getFont(fontFamily, color: AppColors.darkTextMuted),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
 
@@ -240,7 +242,7 @@ class AppTheme {
       // SnackBar
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.darkCard,
-        contentTextStyle: GoogleFonts.inter(color: AppColors.darkText),
+        contentTextStyle: GoogleFonts.getFont(fontFamily, color: AppColors.darkText),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
         elevation: 8,
@@ -269,7 +271,7 @@ class AppTheme {
   }
 
   // === Light Theme ===
-  static ThemeData get lightTheme {
+  static ThemeData getLightTheme(String fontFamily) {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.light,
@@ -287,7 +289,7 @@ class AppTheme {
       brightness: Brightness.light,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.lightBackground,
-      textTheme: _buildTextTheme(AppColors.lightText, AppColors.lightTextSecondary),
+      textTheme: _buildTextTheme(AppColors.lightText, AppColors.lightTextSecondary, fontFamily),
 
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.lightBackground,
@@ -295,7 +297,7 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: GoogleFonts.getFont(fontFamily, 
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: AppColors.lightText,
@@ -313,13 +315,13 @@ class AppTheme {
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return GoogleFonts.inter(
+            return GoogleFonts.getFont(fontFamily, 
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: AppColors.primary,
             );
           }
-          return GoogleFonts.inter(
+          return GoogleFonts.getFont(fontFamily, 
             fontSize: 12,
             fontWeight: FontWeight.w400,
             color: AppColors.lightTextMuted,
@@ -341,10 +343,12 @@ class AppTheme {
 
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.lightBackground,
-        selectedColor: AppColors.primary.withValues(alpha: 0.1),
+        selectedColor: AppColors.primary.withValues(alpha: 0.18),
+        checkmarkColor: AppColors.primary,
         side: const BorderSide(color: AppColors.lightCardBorder),
-        labelStyle: GoogleFonts.inter(fontSize: 13, color: AppColors.lightText),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        labelStyle: GoogleFonts.getFont(fontFamily, fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.lightText),
+        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
 
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -379,8 +383,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.error),
         ),
-        labelStyle: GoogleFonts.inter(color: AppColors.lightTextSecondary),
-        hintStyle: GoogleFonts.inter(color: AppColors.lightTextMuted),
+        labelStyle: GoogleFonts.getFont(fontFamily, color: AppColors.lightTextSecondary),
+        hintStyle: GoogleFonts.getFont(fontFamily, color: AppColors.lightTextMuted),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
 
@@ -391,7 +395,7 @@ class AppTheme {
 
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.lightText,
-        contentTextStyle: GoogleFonts.inter(color: AppColors.lightBackground),
+        contentTextStyle: GoogleFonts.getFont(fontFamily, color: AppColors.lightBackground),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
       ),

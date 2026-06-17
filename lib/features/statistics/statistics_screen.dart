@@ -12,7 +12,9 @@ import '../../providers/expense_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../services/expense_service.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/premium_app_bar.dart';
 import '../../widgets/spending_heatmap.dart';
+import '../../widgets/flow_entrance_animation.dart';
 
 class StatisticsScreen extends ConsumerWidget {
   const StatisticsScreen({super.key});
@@ -22,52 +24,117 @@ class StatisticsScreen extends ConsumerWidget {
     ref.watch(expenseNotifierProvider);
     final symbol = ref.watch(currencySymbolProvider);
     final allExpenses = ref.watch(allExpensesProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (allExpenses.isEmpty) {
-      return const Scaffold(
-        appBar: null,
-        body: EmptyInsights(),
+      return Scaffold(
+        backgroundColor:
+            isDark ? AppColors.darkBackground : AppColors.lightBackground,
+        body: const CustomScrollView(
+          slivers: [
+            PremiumSliverAppBar(
+              title: 'Statistics',
+              subtitle: 'Analytics & insights',
+              emoji: '📊',
+              expandedHeight: 140,
+              lightColors: [Color(0xFFE67E22), Color(0xFFD35400), Color(0xFF922B21)],
+              darkColors: [Color(0xFF2E1A08), Color(0xFF3A1E0A), Color(0xFF200A08)],
+            ),
+            SliverFillRemaining(child: EmptyInsights()),
+
+          ],
+        ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Statistics')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _ChartCard(
-            title: 'Weekly Spending',
-            subtitle: 'Last 7 days',
-            child: _WeeklyLineChart(symbol: symbol),
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      body: CustomScrollView(
+        slivers: [
+          const PremiumSliverAppBar(
+            title: 'Statistics',
+            subtitle: 'Analytics & insights',
+            emoji: '📊',
+            expandedHeight: 140,
+            lightColors: [Color(0xFFE67E22), Color(0xFFD35400), Color(0xFF922B21)],
+            darkColors: [Color(0xFF2E1A08), Color(0xFF3A1E0A), Color(0xFF200A08)],
           ),
-          const SizedBox(height: 16),
-          _ChartCard(
-            title: 'Monthly Spending',
-            subtitle: 'Last 12 months',
-            child: _MonthlyBarChart(symbol: symbol),
-          ),
-          const SizedBox(height: 16),
-          _ChartCard(
-            title: 'Category Distribution',
-            subtitle: 'This month',
-            child: _CategoryPieChart(symbol: symbol),
-          ),
-          const SizedBox(height: 16),
-          _ChartCard(
-            title: 'Top Categories',
-            subtitle: 'By spending this month',
-            child: _TopCategoriesList(symbol: symbol),
-          ),
-          const SizedBox(height: 16),
-          _ChartCard(
-            title: 'Spending Heatmap',
-            subtitle: 'Last 365 days',
-            child: SpendingHeatmap(
-              data: ExpenseService.getHeatmapData(),
-              symbol: symbol,
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                FlowEntranceAnimation(
+                  delay: const Duration(milliseconds: 50),
+                  child: Column(
+                    children: [
+                      _ChartCard(
+                        title: 'Weekly Spending',
+                        subtitle: 'Last 7 days',
+                        child: _WeeklyLineChart(symbol: symbol),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+                FlowEntranceAnimation(
+                  delay: const Duration(milliseconds: 100),
+                  child: Column(
+                    children: [
+                      _ChartCard(
+                        title: 'Monthly Spending',
+                        subtitle: 'Last 12 months',
+                        child: _MonthlyBarChart(symbol: symbol),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+                FlowEntranceAnimation(
+                  delay: const Duration(milliseconds: 150),
+                  child: Column(
+                    children: [
+                      _ChartCard(
+                        title: 'Category Distribution',
+                        subtitle: 'This month',
+                        child: _CategoryPieChart(symbol: symbol),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+                FlowEntranceAnimation(
+                  delay: const Duration(milliseconds: 200),
+                  child: Column(
+                    children: [
+                      _ChartCard(
+                        title: 'Top Categories',
+                        subtitle: 'By spending this month',
+                        child: _TopCategoriesList(symbol: symbol),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+                FlowEntranceAnimation(
+                  delay: const Duration(milliseconds: 250),
+                  child: Column(
+                    children: [
+                      _ChartCard(
+                        title: 'Spending Heatmap',
+                        subtitle: 'Last 365 days',
+                        child: SpendingHeatmap(
+                          data: ExpenseService.getHeatmapData(),
+                          symbol: symbol,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 80),
+              ]),
             ),
           ),
-          const SizedBox(height: 80),
         ],
       ),
     );

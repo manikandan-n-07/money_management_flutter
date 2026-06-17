@@ -10,6 +10,8 @@ import '../../core/constants/app_constants.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../widgets/category_selector.dart';
+import '../../providers/banner_provider.dart';
+import '../../widgets/wave_header.dart';
 
 class AddExpenseScreen extends ConsumerStatefulWidget {
   final String? initialCategory;
@@ -27,7 +29,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
   final _tagCtrl = TextEditingController();
 
   String? _selectedCategory;
-  DateTime _selectedDate = DateTime.now();
+  final DateTime _selectedDate = DateTime.now();
   final List<String> _tags = [];
   bool _isSaving = false;
 
@@ -55,18 +57,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
     super.dispose();
   }
 
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() => _selectedDate = picked);
-    }
-  }
-
   void _addTag(String tag) {
     final trimmed = tag.trim();
     if (trimmed.isNotEmpty && !_tags.contains(trimmed)) {
@@ -82,15 +72,15 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
     final amount = double.tryParse(amountStr);
 
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount')),
+      ref.read(bannerNotifierProvider.notifier).show(
+        message: 'Please enter a valid amount',
       );
       return;
     }
 
     if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')),
+      ref.read(bannerNotifierProvider.notifier).show(
+        message: 'Please select a category',
       );
       return;
     }
@@ -128,23 +118,29 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
     return Scaffold(
       backgroundColor:
           isDark ? AppColors.darkBackground : AppColors.lightBackground,
-      appBar: AppBar(
-        title: const Text('Add Expense'),
-        actions: [
-          TextButton(
-            onPressed: _isSaving ? null : _save,
-            child: _isSaving
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Save',
-                    style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700)),
-          ),
-        ],
+      appBar: WaveHeader(
+        title: 'Add Expense',
+        height: 90,
+        action: TextButton(
+          onPressed: _isSaving ? null : _save,
+          child: _isSaving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Text(
+                  'Save',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+        ),
       ),
       body: AnimatedBuilder(
         animation: _slideAnim,
@@ -192,7 +188,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
               _buildSectionHeader('Date'),
               const SizedBox(height: 8),
               GestureDetector(
-                onTap: _pickDate,
+                onTap: null, // Read-only: Date/time automatically taken
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 14),
@@ -212,11 +208,12 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                       Text(
                         DateFormat('EEEE, dd MMMM yyyy')
                             .format(_selectedDate),
-                        style: theme.textTheme.bodyLarge,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
                       ),
                       const Spacer(),
-                      const Icon(Icons.chevron_right_rounded,
-                          color: AppColors.primary),
+                      // Removed chevron right since date is automatic / read-only
                     ],
                   ),
                 ),

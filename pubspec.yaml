@@ -45,11 +45,31 @@ dependencies:
   shared_preferences: ^2.3.2
   uuid: ^4.5.1
   permission_handler: ^11.3.1
+  image: ^4.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1
+  msix: ^3.16.7
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  windows:
+    generate: true
+    image_path: "money_management_logo.png"
+    icon_size: 256
+  image_path: "money_management_logo.png"
+
+msix_config:
+  display_name: "CashierM"
+  publisher_display_name: "Manilunar"
+  identity_name: "Manilunar.CashierM"
+  publisher: "CN=C5F01A0E-CA67-431B-9430-AF9489AC86DF"
+  version: "1.0.0.0"
+  logo_path: "money_management_logo.png"
 
 flutter:
   uses-material-design: true

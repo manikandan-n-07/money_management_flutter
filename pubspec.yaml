@@ -64,10 +64,10 @@ flutter_launcher_icons:
   image_path: "money_management_logo.png"
 
 msix_config:
-  display_name: "CashierM"
+  display_name: "Cashier"
   publisher_display_name: "Manilunar"
-  identity_name: "Manilunar.CashierM"
-  publisher: "CN=C5F01A0E-CA67-431B-9430-AF9489AC86DF"
+  identity_name: "Manilunar"
+  publisher: "CN=123"
   version: "1.0.0.0"
   logo_path: "money_management_logo.png"
 
